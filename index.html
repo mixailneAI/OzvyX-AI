@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <title>OzvyX AI — OzvyX Labs</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+
+  <!-- Import map для Transformers.js (локально) -->
+  <script type="importmap">
+  {
+    "imports": {
+      "@xenova/transformers": "./AI/libs/transformers.web.min.js"
+    }
+  }
+  </script>
+
+  <style>
+    :root{--bg-body:#f3f5f8;--bg-panel:#fff;--bg-card:#fff;--bg-muted:#eef1f5;--bg-soft:#f8fafc;--text-primary:#172033;--text-secondary:#667085;--text-tertiary:#98a2b3;--border:#e3e7ee;--border-strong:#d0d5dd;--accent:#6d5dfc;--accent-strong:#5947f3;--accent-soft:rgba(109,93,252,.12);--success:#12b76a;--danger:#f04438;--warning:#f79009;--shadow-sm:0 2px 12px rgba(15,23,42,.06);--shadow-md:0 12px 36px rgba(15,23,42,.08);--radius-sm:10px;--radius-md:14px;--radius-lg:20px;--sidebar:260px;--composer-max:980px}
+    html[data-theme="dark"]{--bg-body:#0b0d11;--bg-panel:#11141a;--bg-card:#151922;--bg-muted:#1b202b;--bg-soft:#12161e;--text-primary:#eef2f7;--text-secondary:#a8b0be;--text-tertiary:#70798a;--border:#262d39;--border-strong:#374151;--accent:#8d7fff;--accent-strong:#a092ff;--accent-soft:rgba(141,127,255,.14);--shadow-sm:0 2px 14px rgba(0,0,0,.18);--shadow-md:0 16px 44px rgba(0,0,0,.28)}
+    *{box-sizing:border-box}html,body{height:100%}
+    body{margin:0;font-family:Inter,"Segoe UI",system-ui,sans-serif;color:var(--text-primary);background:var(--bg-body);overflow:hidden}
+    button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.55}
+    ::selection{background:var(--accent-soft)}
+    .app{display:grid;grid-template-columns:var(--sidebar) minmax(0,1fr);height:100dvh;min-height:320px;overflow:hidden}
+    .sidebar{width:var(--sidebar);background:var(--bg-panel);border-right:1px solid var(--border);display:flex;flex-direction:column;min-width:0;z-index:20;transition:transform .22s ease}
+    .brand{padding:18px 16px 14px;display:flex;align-items:center;gap:11px}
+    .brand-mark{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:var(--accent);border:2px solid var(--accent);font-weight:900;font-size:20px;box-shadow:inset 0 0 0 4px var(--accent-soft);flex:0 0 auto}
+    .brand-title{font-size:16px;font-weight:800;line-height:1.1}
+    .brand-subtitle{margin-top:3px;color:var(--text-tertiary);font-size:11px}
+    .sidebar-scroll{overflow:auto;padding:4px 12px 12px;min-height:0;scrollbar-width:thin;scrollbar-color:var(--border-strong) transparent}
+    .section{margin-bottom:18px}
+    .section-title{font-size:10px;font-weight:800;letter-spacing:.08em;color:var(--text-tertiary);text-transform:uppercase;padding:0 4px 7px}
+    .field{margin-bottom:11px}
+    .field label{display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);margin-bottom:6px}
+    .field select,.field input[type="text"],.field input[type="password"],.field textarea{width:100%;border:1px solid var(--border);color:var(--text-primary);background:var(--bg-soft);border-radius:10px;outline:none;transition:border-color .15s ease,box-shadow .15s ease}
+    .field select,.field input[type="text"],.field input[type="password"]{height:38px;padding:0 10px}
+    .field textarea{padding:9px 10px;min-height:98px;resize:vertical}
+    .field select:focus,.field input:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+    .range-wrap{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px}
+    input[type="range"]{width:100%;accent-color:var(--accent)}
+    .range-value{min-width:44px;text-align:right;color:var(--text-primary);font-size:12px;font-variant-numeric:tabular-nums}
+    .mini-help{color:var(--text-tertiary);font-size:10px;line-height:1.4;margin-top:4px}
+    .sidebar-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+    .btn,.icon-btn{border:1px solid var(--border);background:var(--bg-card);color:var(--text-primary);border-radius:10px;min-height:36px;transition:transform .12s ease,border-color .15s ease,background .15s ease}
+    .btn{padding:0 10px;font-size:12px;font-weight:700}
+    .btn:hover,.icon-btn:hover{background:var(--bg-muted);border-color:var(--border-strong)}
+    .btn.primary{color:#fff;background:var(--accent);border-color:var(--accent)}
+    .btn.primary:hover{background:var(--accent-strong)}
+    .btn.danger{color:var(--danger)}
+    .btn.full{width:100%}
+    .history{display:flex;flex-direction:column;gap:5px}
+    .history-empty{color:var(--text-tertiary);font-size:12px;padding:6px 4px;line-height:1.45}
+    .session-item{width:100%;text-align:left;border:1px solid transparent;background:transparent;color:var(--text-primary);border-radius:10px;padding:9px 10px}
+    .session-item:hover{background:var(--bg-muted)}
+    .session-item.active{background:var(--accent-soft);border-color:rgba(109,93,252,.2)}
+    .session-title{font-size:12px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .session-meta{margin-top:3px;font-size:10px;color:var(--text-tertiary)}
+    .sidebar-footer{margin-top:auto;border-top:1px solid var(--border);padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;color:var(--text-tertiary)}
+    .status-dot{width:7px;height:7px;border-radius:50%;background:var(--success);display:inline-block;margin-right:4px}
+    .main{min-width:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;background:var(--bg-body)}
+    .topbar{min-height:62px;display:flex;align-items:center;gap:10px;padding:9px 16px;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--bg-panel) 88%,transparent);backdrop-filter:blur(10px);position:relative;z-index:5}
+    .topbar-left{min-width:0;display:flex;align-items:center;gap:8px;flex:1}
+    .topbar-title{min-width:0}
+    .chat-title{font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .chat-model{margin-top:2px;color:var(--text-tertiary);font-size:10px}
+    .topbar-actions{display:flex;align-items:center;gap:7px}
+    .icon-btn{width:38px;height:36px;padding:0;display:grid;place-items:center}
+    .mobile-only{display:none}
+    .chat-box{overflow:auto;padding:22px 18px 8px;scrollbar-width:thin;scrollbar-color:var(--border-strong) transparent}
+    .chat-inner{width:min(100%,var(--composer-max));margin:0 auto}
+    .welcome{max-width:760px;margin:6vh auto 0;padding:22px;border:1px solid var(--border);border-radius:18px;background:var(--bg-card);box-shadow:var(--shadow-sm)}
+    .welcome h1{margin:0 0 8px;font-size:24px}
+    .welcome p{margin:0;color:var(--text-secondary);line-height:1.6;font-size:14px}
+    .welcome .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px}
+    .welcome .chips span{padding:6px 9px;border-radius:999px;background:var(--bg-muted);color:var(--text-secondary);font-size:11px}
+    .message-row{display:flex;margin:0 0 16px;animation:fadeIn .18s ease}
+    .message-row.user{justify-content:flex-end}
+    .message-row.bot{justify-content:flex-start}
+    .message{max-width:min(92%,780px);border-radius:16px;border:1px solid var(--border);box-shadow:var(--shadow-sm);padding:11px 13px;overflow:hidden}
+    .user .message{background:var(--accent);color:#fff;border-color:transparent;border-bottom-right-radius:5px}
+    .bot .message{background:var(--bg-card);border-bottom-left-radius:5px}
+    .message-meta{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:10px;margin-bottom:7px;opacity:.72}
+    .message-content{font-size:14px;line-height:1.62;overflow-wrap:anywhere}
+    .message-content p{margin:0 0 9px}
+    .message-content p:last-child{margin-bottom:0}
+    .message-content ul,.message-content ol{margin:7px 0 8px;padding-left:22px}
+    .message-content li{margin:3px 0}
+    .message-content blockquote{margin:10px 0;padding:8px 11px;border-left:3px solid var(--accent);background:var(--bg-muted);border-radius:0 9px 9px 0;color:var(--text-secondary)}
+    .message-content a{color:inherit;text-decoration:underline}
+    .user .message-content code{background:rgba(255,255,255,.16)}
+    .message-content code:not(pre code){font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em;padding:2px 5px;border-radius:5px;background:var(--bg-muted)}
+    .code-wrap{position:relative;margin:10px 0;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:#0d1117}
+    .code-header{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 9px;background:#161b22;color:#8b949e;font-size:10px}
+    .copy-code{border:0;background:transparent;color:#c9d1d9;font-size:10px;padding:3px 5px;border-radius:5px}
+    .copy-code:hover{background:rgba(255,255,255,.08)}
+    pre.hljs{margin:0;padding:11px 12px;max-height:440px;overflow:auto;font-size:12px;line-height:1.55}
+    .attachment-inline{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+    .attachment-badge{padding:5px 7px;border-radius:8px;background:var(--bg-muted);color:var(--text-secondary);font-size:10px}
+    .bot-image{display:block;width:min(100%,600px);margin-top:9px;border-radius:12px;border:1px solid var(--border)}
+    .typing{display:inline-flex;align-items:center;gap:4px;padding:3px 0}
+    .typing span{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.4;animation:blink 1s infinite}
+    .typing span:nth-child(2){animation-delay:.16s}
+    .typing span:nth-child(3){animation-delay:.32s}
+    .attachments{width:min(100%,var(--composer-max));margin:0 auto;padding:0 16px 6px;display:flex;flex-wrap:wrap;gap:6px}
+    .file-chip{max-width:260px;display:flex;align-items:center;gap:7px;border:1px solid var(--border);background:var(--bg-card);border-radius:999px;padding:5px 7px 5px 9px;box-shadow:var(--shadow-sm);min-width:0}
+    .file-icon{font-size:14px;flex:0 0 auto}
+    .file-info{min-width:0}
+    .file-name{display:block;font-size:10px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .file-size{display:block;font-size:9px;color:var(--text-tertiary);margin-top:1px}
+    .file-remove{width:22px;height:22px;border:0;background:transparent;color:var(--text-tertiary);border-radius:50%;display:grid;place-items:center}
+    .file-remove:hover{background:var(--bg-muted);color:var(--text-primary)}
+    .composer-wrap{padding:7px 16px 10px}
+    .composer{width:min(100%,var(--composer-max));margin:0 auto}
+    .composer-card{border:1px solid var(--border-strong);background:var(--bg-card);border-radius:18px;box-shadow:var(--shadow-md);overflow:hidden}
+    .composer-top{padding:10px 11px 0}
+    #messageInput{display:block;width:100%;min-height:56px;max-height:190px;resize:none;border:0;outline:0;background:transparent;color:var(--text-primary);font-size:14px;line-height:1.55;padding:3px 2px 5px}
+    .composer-bottom{display:flex;align-items:center;gap:7px;padding:7px}
+    .composer-left,.composer-right{display:flex;align-items:center;gap:6px}
+    .composer-right{margin-left:auto}
+    .send-btn{min-width:90px;height:36px;border-radius:10px;border:0;color:#fff;background:var(--accent);font-weight:800;font-size:12px;padding:0 12px}
+    .send-btn:hover{background:var(--accent-strong)}
+    .secondary-btn{border:1px solid var(--border);background:var(--bg-muted);color:var(--text-primary);height:36px;border-radius:10px;font-size:12px;font-weight:700;padding:0 10px}
+    .secondary-btn:hover{border-color:var(--border-strong)}
+    .composer-hint{text-align:center;color:var(--text-tertiary);font-size:9px;margin-top:6px}
+    #fileInput{display:none}
+    .statusbar{min-height:24px;padding:3px 16px 8px;color:var(--text-tertiary);font-size:10px;text-align:center}
+    .statusbar.error{color:var(--danger)}
+    .statusbar.success{color:var(--success)}
+    .overlay{display:none}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+    @keyframes blink{0%,100%{opacity:.25;transform:translateY(0)}50%{opacity:1;transform:translateY(-2px)}}
+    @media(max-width:900px){.app{grid-template-columns:1fr}.sidebar{position:fixed;inset:0 auto 0 0;transform:translateX(-102%);box-shadow:12px 0 30px rgba(0,0,0,.18)}.sidebar.open{transform:translateX(0)}.mobile-only{display:grid}.overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:15}.overlay.open{display:block}.topbar{padding-left:10px}}
+    @media(max-width:640px){.chat-box{padding:14px 10px 4px}.composer-wrap{padding:5px 8px 8px}.attachments{padding:0 8px 5px}.statusbar{padding:2px 9px 7px}.message{max-width:96%}.welcome{margin-top:4vh;padding:16px}.welcome h1{font-size:20px}.composer-bottom{flex-wrap:wrap}.composer-right{margin-left:0;width:100%}.send-btn{flex:1}.secondary-btn{flex:1}}
+    @media(max-width:400px){.topbar-actions .theme-btn{display:none}.chat-title{font-size:13px}.chat-model{font-size:9px}.brand{padding-left:13px}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark">O</div>
+      <div><div class="brand-title">🧠 OzvyX AI</div><div class="brand-subtitle">от OzvyX Labs</div></div>
+    </div>
+    <div class="sidebar-scroll">
+      <section class="section">
+        <div class="section-title">Модель</div>
+        <div class="field">
+          <label for="modelSelect">Выбор модели</label>
+          <select id="modelSelect">
+            <option value="experimental">🧪 OzvyX Experimental (JS + эмбеддинги)</option>
+            <option value="mistral-large-latest">OzvyX Large (Mistral API)</option>
+            <option value="mistral-medium-latest">OzvyX Medium (Mistral API)</option>
+            <option value="mistral-small-latest">OzvyX Small (Mistral API)</option>
+            <option value="codestral-latest">OzvyX Code (Mistral API)</option>
+            <option value="pixtral-large-latest">OzvyX Vision (Mistral API)</option>
+          </select>
+          <div class="mini-help" id="modelHelp">🧠 Локальный JS-движок + эмбеддинги (поиск по смыслу).</div>
+        </div>
+      </section>
+      <section class="section">
+        <div class="section-title">Режим</div>
+        <div class="field">
+          <label for="modeSelect">Личность помощника</label>
+          <select id="modeSelect">
+            <option value="general">Общий помощник</option>
+            <option value="creative">Креативный</option>
+            <option value="precise">Точный (факты)</option>
+            <option value="code">Эксперт по коду</option>
+            <option value="analyst">Аналитик данных</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="temperatureRange"><span>Температура</span><span class="range-value" id="temperatureValue">0.70</span></label>
+          <div class="range-wrap"><input id="temperatureRange" type="range" min="0" max="1.5" step="0.05" value="0.7"><span></span></div>
+        </div>
+        <div class="field">
+          <label for="tokensRange"><span>Макс. токенов</span><span class="range-value" id="tokensValue">1200</span></label>
+          <div class="range-wrap"><input id="tokensRange" type="range" min="100" max="4000" step="100" value="1200"><span></span></div>
+        </div>
+        <div class="field">
+          <label for="systemPrompt">Системный промпт</label>
+          <textarea id="systemPrompt" placeholder="Пусто — используется выбранный режим."></textarea>
+          <div class="mini-help">Если заполнен, этот текст имеет приоритет над режимом.</div>
+        </div>
+      </section>
+      <section class="section">
+        <div class="section-title">История</div>
+        <div class="sidebar-actions" style="margin-bottom:8px">
+          <button class="btn primary" id="newChatBtn">+ Новый чат</button>
+          <button class="btn" id="exportBtn">Экспорт</button>
+          <button class="btn" id="importBtn">Импорт</button>
+          <button class="btn" id="sidebarThemeBtn">Тема</button>
+        </div>
+        <input id="importInput" type="file" accept="application/json" hidden>
+        <div class="history" id="historyList"></div>
+      </section>
+      <section class="section">
+        <button class="btn full danger" id="clearAllBtn">Удалить историю и настройки</button>
+      </section>
+    </div>
+    <div class="sidebar-footer">
+      <span><span class="status-dot"></span>Локальный JS-движок</span>
+      <span>OzvyX Labs</span>
+    </div>
+  </aside>
+  <div class="overlay" id="overlay"></div>
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="icon-btn mobile-only" id="menuBtn">☰</button>
+        <div class="topbar-title">
+          <div class="chat-title" id="chatTitle">Новый чат</div>
+          <div class="chat-model" id="chatModel">🧪 Experimental (JS + эмбеддинги)</div>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn" id="clearChatBtn">Очистить</button>
+        <button class="icon-btn theme-btn" id="mainThemeBtn">◐</button>
+      </div>
+    </header>
+    <section class="chat-box" id="chatBox" aria-live="polite">
+      <div class="chat-inner" id="chatInner"></div>
+    </section>
+    <div class="attachments" id="attachments"></div>
+    <div class="composer-wrap">
+      <div class="composer">
+        <div class="composer-card">
+          <div class="composer-top">
+            <textarea id="messageInput" rows="2" placeholder="Напишите сообщение…"></textarea>
+          </div>
+          <div class="composer-bottom">
+            <div class="composer-left">
+              <button class="secondary-btn" id="attachBtn">📎 Файлы</button>
+              <button class="secondary-btn" id="generateBtn">🎨 Генерация</button>
+              <input id="fileInput" type="file" multiple>
+            </div>
+            <div class="composer-right">
+              <button class="send-btn" id="sendBtn">Отправить ↵</button>
+            </div>
+          </div>
+        </div>
+        <div class="composer-hint">Enter — отправить · Shift+Enter — новая строка · файлы обрабатываются локально, кроме вызовов Mistral API</div>
+      </div>
+    </div>
+    <div class="statusbar" id="statusBar">Готово.</div>
+  </main>
+</div>
+
+<script type="module">
+import { initApp, initEmbeddingSearch, loadDictionaries } from './AI/ozvyx.js';
+
+// === Вспомогательные функции (для отладки) ===
+function getElements() {
+  return {
+    sidebar: document.getElementById('sidebar'),
+    overlay: document.getElementById('overlay'),
+    menuBtn: document.getElementById('menuBtn'),
+    modelSelect: document.getElementById('modelSelect'),
+    modeSelect: document.getElementById('modeSelect'),
+    temperatureRange: document.getElementById('temperatureRange'),
+    temperatureValue: document.getElementById('temperatureValue'),
+    tokensRange: document.getElementById('tokensRange'),
+    tokensValue: document.getElementById('tokensValue'),
+    systemPrompt: document.getElementById('systemPrompt'),
+    historyList: document.getElementById('historyList'),
+    chatTitle: document.getElementById('chatTitle'),
+    chatModel: document.getElementById('chatModel'),
+    chatBox: document.getElementById('chatBox'),
+    chatInner: document.getElementById('chatInner'),
+    messageInput: document.getElementById('messageInput'),
+    sendBtn: document.getElementById('sendBtn'),
+    attachBtn: document.getElementById('attachBtn'),
+    generateBtn: document.getElementById('generateBtn'),
+    fileInput: document.getElementById('fileInput'),
+    attachments: document.getElementById('attachments'),
+    statusBar: document.getElementById('statusBar'),
+    newChatBtn: document.getElementById('newChatBtn'),
+    exportBtn: document.getElementById('exportBtn'),
+    importBtn: document.getElementById('importBtn'),
+    importInput: document.getElementById('importInput'),
+    sidebarThemeBtn: document.getElementById('sidebarThemeBtn'),
+    mainThemeBtn: document.getElementById('mainThemeBtn'),
+    clearChatBtn: document.getElementById('clearChatBtn'),
+    clearAllBtn: document.getElementById('clearAllBtn'),
+    modelHelp: document.getElementById('modelHelp')
+  };
+}
+
+// === ГЛАВНАЯ ФУНКЦИЯ ЗАПУСКА ===
+(async function main() {
+  // 1. Загружаем словари (если есть)
+  await loadDictionaries();
+
+  // 2. Ждём загрузки базы знаний (knowledge.js)
+  await new Promise((resolve) => {
+    if (window.EXTRA_KNOWLEDGE) {
+      resolve();
+    } else {
+      window.addEventListener('load', resolve);
+    }
+  });
+
+  console.log(`📚 Загружено записей в базе знаний: ${Object.keys(window.EXTRA_KNOWLEDGE).length}`);
+
+  // 3. Запускаем загрузку эмбеддингов в фоне (не блокируем UI)
+  initEmbeddingSearch(window.EXTRA_KNOWLEDGE)
+    .then(() => console.log('✅ Эмбеддинги инициализированы'))
+    .catch(err => console.warn('⚠️ Эмбеддинги не загружены:', err));
+
+  // 4. Инициализируем UI
+  const elements = getElements();
+  const app = await initApp(elements);
+
+  // 5. (Опционально) можно сохранить app в глобальную переменную для отладки
+  window.__app = app;
+
+  console.log('🚀 Приложение запущено!');
+})();
+</script>
+</body>
+</html>
