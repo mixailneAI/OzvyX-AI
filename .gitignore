@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Виртуальные окружения
+.venv/
+venv/
+env/
+
+# Данные и чекпоинты (не коммитим — они большие и воспроизводимы)
+data/*.txt
+checkpoints/*.npz
+checkpoints/*.bin
+checkpoints/*.json
+memory/history.json
+
+# Логи и кэши
+*.log
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Редакторы / ОС
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Временные скрипты обучения
+_train_verbose.py
+_run_train.sh
+train.log
