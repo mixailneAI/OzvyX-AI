@@ -10,15 +10,15 @@ from dataclasses import dataclass
 @dataclass
 class Settings:
     # ---------- Архитектура модели ----------
-    n_layer: int = 3          # число трансформер-блоков
+    n_layer: int = 5          # число трансформер-блоков
     n_head: int = 4           # число голов внимания
-    n_embd: int = 96          # размерность эмбеддинга (должна делиться на n_head)
-    block_size: int = 64      # длина контекста (в токенах)
+    n_embd: int = 128          # размерность эмбеддинга (должна делиться на n_head)
+    block_size: int = 96      # длина контекста (в токенах)
 
     # ---------- Обучение ----------
     batch_size: int = 32
-    learning_rate: float = 3e-3
-    iterations: int = 1000
+    learning_rate: float = 2e-3
+    iterations: int = 1500
     eval_interval: int = 200
     eval_batches: int = 20
     train_split: float = 0.9
@@ -30,8 +30,8 @@ class Settings:
 
     # ---------- Пути (относительно корня проекта) ----------
     data_path: str = "data/input.txt"
-    checkpoint_path: str = "checkpoints/ozvyx-small.npz"
-    tokenizer_path: str = "checkpoints/tokenizer.json"
+    checkpoint_path: str = "checkpoints/brain_v2.npz"
+    tokenizer_path: str = "checkpoints/dict_v2.json"
     history_path: str = "memory/history.json"
 
     # ---------- Данные ----------

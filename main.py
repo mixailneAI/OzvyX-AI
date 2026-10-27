@@ -1,91 +1,65 @@
-"""Точка входа OzvyX-small.
-
-OzvyX-small — это base-модель, обученная на текстах Шекспира. Она умеет
-продолжать текст в шекспировском стиле, но не умеет вести диалог (для этого
-нужно instruction tuning). Поэтому мы используем формат, который она знает:
-`ROMEO:\\n<текст пользователя>\\n` — модель продолжает как шекспировский персонаж.
-"""
-
 import os
 import sys
-
+import numpy as np
 from config.settings import SETTINGS
 from model.transformer import OzvyxSmall
-from model.tokenizer import CharTokenizer
-from inference.sampler import generate
+from model.bpe_tokenizer import BPETokenizer
+from model.layers import softmax
 
+def generate_streaming(model, tokenizer, prompt, max_new_tokens=60, temperature=0.8, top_k=40):
+    rng = np.random.default_rng()
+    prompt_ids = tokenizer.encode(prompt)
+    if not prompt_ids:
+        prompt_ids = [0]
+        
+    seq = np.array([prompt_ids])
+    bs = model.block_size
+    
+    generated = list(prompt_ids)
+    print("OzvyX: ", end="", flush=True)
+    
+    for _ in range(max_new_tokens):
+        ctx = seq[:, -bs:]
+        logits, _, _ = model.forward(ctx)
+        next_logits = logits[0, -1, :] / max(temperature, 1e-6)
 
-def _ensure_checkpoint() -> bool:
-    missing = [p for p in (SETTINGS.checkpoint_path, SETTINGS.tokenizer_path)
-               if not os.path.exists(p)]
-    if not missing:
-        return True
-    print("Не найдены файлы модели:")
-    for p in missing:
-        print(f"  {p}")
-    print("\nСначала обучите модель:")
-    print("  python -m training.prepare_data")
-    print("  python -m training.trainer")
-    return False
+        if top_k > 0:
+            kth = np.partition(next_logits, -top_k)[-top_k]
+            next_logits = np.where(next_logits < kth, -np.inf, next_logits)
 
+        probs = softmax(next_logits)
+        nxt = int(rng.choice(probs.shape[0], p=probs))
+        
+        seq = np.concatenate([seq, np.array([[nxt]])], axis=1)
+        generated.append(nxt)
+        
+        # Печатаем только новый токен
+        new_word = tokenizer.vocab.get(nxt, "")
+        print(new_word + " ", end="", flush=True)
+        
+    print("\n")
 
-def _format_answer(raw: str, prompt: str) -> str:
-    """Отрезает prompt, останавливается на следующем персонаже, чистит UNK."""
-    body = raw[len(prompt):] if raw.startswith(prompt) else raw
-    # Модель может продолжить другим персонажем — режем там
-    for marker in ("\nROMEO:", "\nJULIET:", "\nHAMLET:", "\nMACBETH:",
-                   "\nKING ", "\nQUEEN ", "\nDUKE ", "\nFirst ", "\nSecond "):
-        if marker in body:
-            body = body.split(marker, 1)[0]
-    return body.replace("\x00", "").strip()
+def main() -> int:
+    print(f"Загрузка модели: {SETTINGS.checkpoint_path}")
+    model = OzvyxSmall.load(SETTINGS.checkpoint_path)
+    tokenizer = BPETokenizer.load("checkpoints/dict_v2.json")
 
-
-def _chat_loop(model, tokenizer) -> None:
+    print(f"OzvyX-small готов. Параметров: {sum(p.size for p in model.params.values()):,}\n")
     print("Команды: /exit — выход\n")
+
     while True:
         try:
             user = input("Вы: ").strip()
         except (EOFError, KeyboardInterrupt):
-            print()
             break
-        if not user:
-            continue
-        if user.lower() in ("exit", "quit", "/exit", "/quit"):
+        if not user or user.lower() == "/exit":
             break
-
-        # Формат, который знает модель: имя персонажа + реплика.
-        prompt = f"ROMEO:\n{user}\n"
-
+            
         try:
-            raw = generate(
-                model, tokenizer, prompt,
-                max_new_tokens=200,
-                temperature=0.85,
-                top_k=40,
-            )
+            generate_streaming(model, tokenizer, user, max_new_tokens=40)
         except KeyboardInterrupt:
-            print("\n[генерация прервана]\n")
-            continue
-
-        answer = _format_answer(raw, prompt) or "(пусто)"
-        print(f"OzvyX: {answer}\n")
-
-
-def main() -> int:
-    if not _ensure_checkpoint():
-        return 1
-
-    print(f"Загрузка модели: {SETTINGS.checkpoint_path}")
-    model = OzvyxSmall.load(SETTINGS.checkpoint_path)
-    tokenizer = CharTokenizer.load(SETTINGS.tokenizer_path)
-
-    n_params = sum(p.size for p in model.params.values())
-    print(f"OzvyX-small готов. Параметров: {n_params:,}\n")
-
-    _chat_loop(model, tokenizer)
-    print("До встречи.")
+            print("\n[прервано]\n")
     return 0
-
 
 if __name__ == "__main__":
     sys.exit(main())
