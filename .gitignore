@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.log
+# Игнорируем тяжелые веса и данные (их нельзя пушить на GitHub)
+*.bin
+*.npz
+data/
+checkpoints/
+OzvyX-base-model/model.bin

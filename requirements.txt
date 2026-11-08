@@ -1,0 +1,3 @@
+# Единственная зависимость проекта.
+# Никакого torch / transformers / llama-cpp — OzvyX-small пишется на чистом NumPy.
+numpy>=1.24
